@@ -48,7 +48,7 @@ A web-based permission management system to digitize and streamline the student 
 **Validation:**
 - All fields mandatory
 - Character limits enforced
-- Duplicate request prevention (no multiple pending requests)
+- Duplicate request prevention (no multiple pending requests for the same leave date)
 - Leave date cannot be in the past
 - Leave time must be future time if leave date is today
 
@@ -333,11 +333,18 @@ created_at
 ### Student Dashboard
 - Clean, mobile-responsive interface
 - "New Request" button prominently displayed (sticky bottom on mobile)
+- **Dashboard Tabs:**
+  - **Pending**: Shows requests with status PENDING_PARENT, PENDING_TEACHER, PENDING_HOD
+  - **Approved**: Shows requests with status APPROVED
+  - **Denied**: Shows requests with status REJECTED_BY_PARENT, REJECTED_BY_TEACHER, REJECTED_BY_HOD
+  - **Cancelled**: Shows requests with status CANCELLED_BY_STUDENT
+  - **All Requests**: Shows complete history of all submitted requests
 - Request history table/cards with status badges
 - Color-coded status indicators (Emergency: red badge, Casual: blue badge)
 - Real-time status updates
 - "Cancel Request" button visible for pending requests
 - Swipe actions on mobile for quick cancel
+- Click on any request to view complete details including approval chain and timestamps
 
 ### Parent Approval Page
 - Simple, single-purpose page

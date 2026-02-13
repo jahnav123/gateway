@@ -11,6 +11,7 @@ Digitally manage student off-campus permission requests through a multi-level ap
    - **Pending**: View all requests awaiting approval (parent, teacher, or HOD)
    - **Approved**: View all approved requests with leave details
    - **Denied**: View all rejected requests with rejection reasons
+   - **Cancelled**: View all requests you have cancelled
    - **All Requests**: View complete history of all submitted requests
    - Click on any request to see complete details including approval chain and timestamps
 3. **Submit Request**: 
@@ -18,8 +19,11 @@ Digitally manage student off-campus permission requests through a multi-level ap
    - Enter reason for leaving (max 500 characters)
    - Choose leave date and time
    - Submit request
-4. **Receive Notification**: Get SMS confirmation when request is approved with leave details
-5. **Show Approval**: Present approval SMS at gate during leave time
+4. **Cancel Request**: You can cancel any pending request before final HOD approval from your dashboard
+   - Available for requests in Pending tab only
+   - Notifications sent to parent/teacher/HOD if already in their queue
+5. **Receive Notification**: Get SMS confirmation when request is approved with leave details
+6. **Show Approval**: Present approval SMS at gate during leave time
 
 ### For Parents
 1. **Receive SMS**: Get notification with request details and approval link
@@ -56,7 +60,8 @@ Digitally manage student off-campus permission requests through a multi-level ap
 - **Pending HOD**: Teacher approved, awaiting HOD final approval
 - **Approved**: Fully approved, valid until leave time expires
 - **Rejected**: Denied by parent, teacher, or HOD
-- **Expired**: Leave time has passed
+- **Cancelled**: Cancelled by student before final approval
+- **Expired**: Leave time has passed (appears only in All Requests tab)
 
 ## Tips
 - **Students**: Provide clear, specific reasons for leave requests
