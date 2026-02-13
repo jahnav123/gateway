@@ -50,29 +50,16 @@
     <div class="container">
         <div id="loginSection" class="card">
             <h2>Login</h2>
-            <div class="tabs">
-                <button class="tab active" onclick="switchLogin('student')">Student</button>
-                <button class="tab" onclick="switchLogin('teacher')">Teacher</button>
-                <button class="tab" onclick="switchLogin('hod')">HOD</button>
+            
+            <div class="form-group">
+                <label>Email or Roll Number</label>
+                <input type="text" id="loginIdentifier" placeholder="Enter email or roll number">
             </div>
-
-            <div id="studentLogin" class="section active">
-                <div class="form-group"><label>Roll Number</label><input type="text" id="sRoll"></div>
-                <div class="form-group"><label>Password</label><input type="password" id="sPass"></div>
-                <button class="btn btn-primary" onclick="login('student')">Login</button>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword">
             </div>
-
-            <div id="teacherLogin" class="section">
-                <div class="form-group"><label>Email</label><input type="email" id="tEmail"></div>
-                <div class="form-group"><label>Password</label><input type="password" id="tPass"></div>
-                <button class="btn btn-primary" onclick="login('teacher')">Login</button>
-            </div>
-
-            <div id="hodLogin" class="section">
-                <div class="form-group"><label>Email</label><input type="email" id="hEmail"></div>
-                <div class="form-group"><label>Password</label><input type="password" id="hPass"></div>
-                <button class="btn btn-primary" onclick="login('hod')">Login</button>
-            </div>
+            <button class="btn btn-primary" onclick="login()">Login</button>
         </div>
 
         <div id="studentDashboard" class="section">
@@ -142,7 +129,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000/api';
+        const API_URL = 'http://192.168.18.104:3000/api';
         let currentUser = null, currentRole = null, currentToken = null, currentStudentTab = 'pending';
         
         // API Helper
@@ -165,49 +152,29 @@
             return data;
         }
 
-        function switchLogin(type) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            document.querySelectorAll('#loginSection .section').forEach(s => s.classList.remove('active'));
-            document.getElementById(type + 'Login').classList.add('active');
-        }
-
-        async function login(role) {
+        async function login() {
             try {
-                if (role === 'student') {
-                    const identifier = document.getElementById('sRoll').value.trim();
-                    const password = document.getElementById('sPass').value.trim();
-                    
-                    const data = await apiCall('/auth/login', 'POST', { role, identifier, password }, false);
-                    currentToken = data.token;
-                    currentUser = data.user;
-                    currentRole = 'student';
-                    
+                const identifier = document.getElementById('loginIdentifier').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+                
+                if (!identifier || !password) {
+                    alert('Please enter both identifier and password');
+                    return;
+                }
+                
+                const data = await apiCall('/auth/login', 'POST', { identifier, password }, false);
+                currentToken = data.token;
+                currentUser = data.user;
+                currentRole = data.user.role;
+                
+                if (currentRole === 'student') {
                     showDashboard('studentDashboard');
                     document.getElementById('studentName').textContent = data.user.name;
                     loadStudentRequests();
-                    
-                } else if (role === 'teacher') {
-                    const identifier = document.getElementById('tEmail').value.trim();
-                    const password = document.getElementById('tPass').value.trim();
-                    
-                    const data = await apiCall('/auth/login', 'POST', { role, identifier, password }, false);
-                    currentToken = data.token;
-                    currentUser = data.user;
-                    currentRole = 'teacher';
-                    
+                } else if (currentRole === 'teacher') {
                     showDashboard('teacherDashboard');
                     loadTeacherRequests();
-                    
-                } else if (role === 'hod') {
-                    const identifier = document.getElementById('hEmail').value.trim();
-                    const password = document.getElementById('hPass').value.trim();
-                    
-                    const data = await apiCall('/auth/login', 'POST', { role, identifier, password }, false);
-                    currentToken = data.token;
-                    currentUser = data.user;
-                    currentRole = 'hod';
-                    
+                } else if (currentRole === 'hod') {
                     showDashboard('hodDashboard');
                     loadHODRequests();
                 }

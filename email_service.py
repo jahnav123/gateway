@@ -50,7 +50,7 @@ def send_email(to_email, subject, body_html):
 
 def send_parent_approval_email(parent_email, student_name, request_type, leave_date, leave_time, reason, token):
     """Send approval request email to parent"""
-    approval_url = f"http://localhost:8080/parent-approve.html?token={token}"
+    approval_url = f"http://192.168.18.104:8080/parent-approve.html?token={token}"
     
     subject = f"Permission Request from {student_name}"
     

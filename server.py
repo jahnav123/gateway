@@ -47,7 +47,6 @@ def verify_token(authorization: str = Header(None)):
 
 # Models
 class LoginRequest(BaseModel):
-    role: str
     identifier: str
     password: str
 
@@ -66,12 +65,18 @@ def login(req: LoginRequest):
     conn = get_db()
     c = conn.cursor()
     
-    if req.role == 'student':
-        c.execute('SELECT * FROM users WHERE role = ? AND roll_number = ?', (req.role, req.identifier.upper()))
-    else:
-        c.execute('SELECT * FROM users WHERE role = ? AND email = ?', (req.role, req.identifier.lower()))
+    # Try to find user by roll number (student) or email (teacher/hod)
+    identifier = req.identifier.strip()
     
+    # First try as roll number (student)
+    c.execute('SELECT * FROM users WHERE roll_number = ?', (identifier.upper(),))
     user = c.fetchone()
+    
+    # If not found, try as email (teacher/hod)
+    if not user:
+        c.execute('SELECT * FROM users WHERE email = ?', (identifier.lower(),))
+        user = c.fetchone()
+    
     conn.close()
     
     if not user or not bcrypt.checkpw(req.password.encode(), user['password_hash'].encode()):
