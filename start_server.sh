@@ -1,7 +1,11 @@
 #!/bin/bash
+# Render deployment script
 
-# Start backend server in background
+echo "🚀 Starting Gateway Application..."
+
+# Initialize database
+python3 init_db.py
+
+# Start backend and proxy server
 python3 server.py &
-
-# Start proxy server (serves frontend and proxies API)
 python3 proxy_server.py
