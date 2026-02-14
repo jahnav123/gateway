@@ -33,6 +33,10 @@ def send_email(to_email, subject, body_html):
         msg['From'] = f"{COLLEGE_NAME} <{SMTP_EMAIL}>"
         msg['To'] = to_email
         msg['Subject'] = subject
+        msg['Reply-To'] = SMTP_EMAIL
+        msg['X-Priority'] = '1'
+        msg['X-MSMail-Priority'] = 'High'
+        msg['Importance'] = 'High'
         
         html_part = MIMEText(body_html, 'html')
         msg.attach(html_part)
@@ -50,7 +54,9 @@ def send_email(to_email, subject, body_html):
 
 def send_parent_approval_email(parent_email, student_name, request_type, leave_date, leave_time, reason, token):
     """Send approval request email to parent"""
-    approval_url = f"http://localhost:8080/parent-approve.html?token={token}"
+    # Use environment variable for base URL, fallback to localhost
+    base_url = os.getenv('BASE_URL', 'http://localhost:8080')
+    approval_url = f"{base_url}/parent-approve.html?token={token}"
     
     subject = f"Permission Request from {student_name}"
     
@@ -72,10 +78,22 @@ def send_parent_approval_email(parent_email, student_name, request_type, leave_d
                 <p><strong>Reason:</strong> {reason}</p>
             </div>
             
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="{approval_url}" style="display: inline-block; padding: 15px 40px; background: #27ae60; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
-                    Click Here to Approve/Reject
-                </a>
+            <div style="margin: 30px 0; text-align: center;">
+                <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                    <tr>
+                        <td style="background: #27ae60; border-radius: 5px; text-align: center;">
+                            <a href="{approval_url}" 
+                               target="_blank"
+                               style="display: block; padding: 15px 40px; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px;">
+                                Click Here to Approve/Reject
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                <p style="margin-top: 20px; font-size: 13px; color: #666;">
+                    If button doesn't work, copy this link:<br>
+                    <span style="color: #3498db; word-break: break-all;">{approval_url}</span>
+                </p>
             </div>
             
             <p style="color: #7f8c8d; font-size: 12px; margin-top: 20px;">

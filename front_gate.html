@@ -54,7 +54,7 @@
             <h2>Login with Google</h2>
             <p style="color: #666; margin-bottom: 20px;">Secure authentication using your Google account</p>
             
-            <div id="simpleLogin">
+            <div id="simpleLogin" style="display: none;">
                 <div class="form-group">
                     <label>Email Address</label>
                     <input type="email" id="emailLogin" placeholder="Enter your email">
@@ -67,7 +67,7 @@
                 </p>
             </div>
             
-            <div class="google-btn-container" id="googleBtnContainer" style="display: none;">
+            <div class="google-btn-container" id="googleBtnContainer">
                 <div id="g_id_onload"
                      data-client_id="896563148898-u92eg641v7h3dqm9up4a31n5367fu1il.apps.googleusercontent.com"
                      data-callback="handleGoogleLogin">
@@ -143,7 +143,10 @@
     </div>
 
     <script>
-        const API_URL = window.location.origin + '/api';
+        // Auto-detect API URL based on environment
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000/api'
+            : window.location.origin + '/api';
         let currentUser = null, currentRole = null, currentToken = null, currentStudentTab = 'pending';
         
         // API Helper
