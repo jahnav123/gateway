@@ -109,13 +109,34 @@ def google_auth(req: GoogleAuthRequest):
         # Determine role
         role = get_user_role(email)
         
+        # Check if user exists in database
+        conn = get_db()
+        c = conn.cursor()
+        c.execute('SELECT * FROM users WHERE email = ?', (email,))
+        existing_user = c.fetchone()
+        
+        if existing_user:
+            user_id = existing_user['id']
+        else:
+            # Create new user in database
+            # Note: parent_phone column in requests table actually stores parent_email
+            parent_email = f"parent.{email.split('@')[0]}@gmail.com"  # Generate parent email
+            c.execute('''
+                INSERT INTO users (role, email, name, department, class, roll_number, parent_phone, parent_email)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (role, email, name, 'CSE', 'CS-A' if role == 'student' else '', '', '0000000000', parent_email))
+            conn.commit()
+            user_id = c.lastrowid
+        
+        conn.close()
+        
         # Generate user data
         user_data = {
-            'id': hash(email) % 10000,
+            'id': user_id,
             'email': email,
             'role': role,
             'name': name,
-            'class': '' if role != 'student' else 'CS-A',
+            'class': 'CS-A' if role == 'student' else '',
             'department': 'CSE',
             'roll_number': ''
         }
@@ -205,6 +226,10 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
     c.execute('SELECT * FROM users WHERE id = ?', (user['id'],))
     student = c.fetchone()
     
+    if not student['parent_email']:
+        conn.close()
+        raise HTTPException(status_code=400, detail='Parent email not configured. Please contact admin.')
+    
     # Generate token
     token = 'TOKEN_' + str(int(time.time())) + '_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=9))
     token_expiry = (datetime.utcnow() + timedelta(hours=24)).isoformat()
@@ -218,7 +243,7 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         request_id, user['id'], student['name'], student['roll_number'], student['class'], student['department'],
-        student['parent_phone'], req.type, req.reason, req.date, req.time, f"{req.date} {req.time}",
+        student['parent_email'], req.type, req.reason, req.date, req.time, f"{req.date} {req.time}",
         'PENDING_PARENT', token, token_expiry
     ))
     
@@ -227,16 +252,15 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
     conn.close()
     
     # Send email to parent
-    if student['parent_email']:
-        send_parent_approval_email(
-            student['parent_email'],
-            student['name'],
-            req.type,
-            req.date,
-            req.time,
-            req.reason,
-            token
-        )
+    send_parent_approval_email(
+        student['parent_email'],
+        student['name'],
+        req.type,
+        req.date,
+        req.time,
+        req.reason,
+        token
+    )
     
     return {
         'message': 'Request submitted successfully',
