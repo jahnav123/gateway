@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get Google OAuth Credentials</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .step { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #4285f4; }
+        h1 { color: #333; }
+        h2 { color: #4285f4; }
+        code { background: #e8e8e8; padding: 2px 6px; border-radius: 3px; }
+        a { color: #4285f4; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .warning { background: #fff3cd; border-left-color: #ffc107; }
+        ol { line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Google OAuth Setup Guide</h1>
+    <p>Follow these steps to get your Google Client ID and enable Google Sign-In:</p>
+
+    <div class="step">
+        <h2>Step 1: Create Google Cloud Project</h2>
+        <ol>
+            <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+            <li>Click "Select a project" → "New Project"</li>
+            <li>Enter project name: <code>Gateway Permission System</code></li>
+            <li>Click "Create"</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>Step 2: Configure OAuth Consent Screen</h2>
+        <ol>
+            <li>In left sidebar: "APIs & Services" → "OAuth consent screen"</li>
+            <li>Select "External" → Click "Create"</li>
+            <li>Fill in:
+                <ul>
+                    <li>App name: Gateway Permission System</li>
+                    <li>User support email: Your email</li>
+                    <li>Developer contact: Your email</li>
+                </ul>
+            </li>
+            <li>Click "Save and Continue" (skip Scopes)</li>
+            <li>Add test users: Add your email addresses</li>
+            <li>Click "Save and Continue"</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>Step 3: Create OAuth Client ID</h2>
+        <ol>
+            <li>Go to "APIs & Services" → "Credentials"</li>
+            <li>Click "Create Credentials" → "OAuth client ID"</li>
+            <li>Select "Web application"</li>
+            <li>Name: <code>Gateway Web Client</code></li>
+            <li>Add Authorized JavaScript origins:
+                <ul>
+                    <li><code>http://localhost:8080</code></li>
+                    <li><code>http://192.168.18.104:8080</code></li>
+                </ul>
+            </li>
+            <li>Click "Create"</li>
+            <li><strong>Copy the Client ID</strong> (looks like: 123456789-abc123.apps.googleusercontent.com)</li>
+            <li><strong>Copy the Client Secret</strong></li>
+        </ol>
+    </div>
+
+    <div class="step warning">
+        <h2>Step 4: Configure Your Application</h2>
+        <p><strong>Option A: Automated (Recommended)</strong></p>
+        <ol>
+            <li>Open terminal in your gateway folder</li>
+            <li>Run: <code>./setup_oauth.sh</code></li>
+            <li>Paste your Client ID when prompted</li>
+            <li>Paste your Client Secret when prompted</li>
+        </ol>
+        
+        <p><strong>Option B: Manual</strong></p>
+        <ol>
+            <li>Edit <code>.env</code> file:
+                <pre>GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret</pre>
+            </li>
+            <li>Edit <code>front_gate.html</code> (around line 69):
+                <pre>data-client_id="your-client-id.apps.googleusercontent.com"</pre>
+            </li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>Step 5: Install Dependencies & Start</h2>
+        <ol>
+            <li>Install Python packages: <code>pip install -r requirements.txt</code></li>
+            <li>Start server: <code>python server.py</code></li>
+            <li>Open: <a href="http://192.168.18.104:8080/front_gate.html" target="_blank">http://192.168.18.104:8080/front_gate.html</a></li>
+            <li>Click "Sign in with Google"</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>✅ Verification</h2>
+        <p>If setup is correct, you should see:</p>
+        <ul>
+            <li>Google Sign-In button (not a setup warning)</li>
+            <li>Clicking it opens Google account selection popup</li>
+            <li>After selecting account, you're logged into the dashboard</li>
+        </ul>
+    </div>
+
+    <div class="step warning">
+        <h2>⚠️ Common Issues</h2>
+        <ul>
+            <li><strong>"The server cannot process the request"</strong> → Client ID not configured or invalid</li>
+            <li><strong>"Redirect URI mismatch"</strong> → Add your URL to Authorized JavaScript origins</li>
+            <li><strong>"Access blocked"</strong> → Add your email as test user in OAuth consent screen</li>
+        </ul>
+    </div>
+</body>
+</html>

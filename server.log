@@ -1,41 +1,18 @@
-INFO:     Started server process [3726]
+INFO:     Started server process [3868]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
 ✅ Email service initialized
-INFO:     192.168.18.104:49822 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49822 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
-INFO:     192.168.18.104:49823 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49823 - "OPTIONS /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49823 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49824 - "OPTIONS /api/student/request HTTP/1.1" 200 OK
-✅ Email sent to watermelon37453@gmail.com: Permission Request from Student L9
-INFO:     192.168.18.104:49824 - "POST /api/student/request HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49827 - "GET /api/parent/request/TOKEN_1770976702_3z0yg4iml HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49828 - "OPTIONS /api/parent/reject/TOKEN_1770976702_3z0yg4iml HTTP/1.1" 200 OK
-✅ Email sent to watermelon37453@gmail.com: Permission REJECTED - Student L9
-INFO:     192.168.18.104:49828 - "POST /api/parent/reject/TOKEN_1770976702_3z0yg4iml HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49830 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49830 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49830 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49831 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49831 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49832 - "GET /api/student/requests HTTP/1.1" 200 OK
-✅ Email sent to watermelon37453@gmail.com: Permission Request from Student L9
-INFO:     192.168.18.104:49833 - "POST /api/student/request HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49835 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49837 - "GET /api/parent/request/TOKEN_1770976809_9ufv3e8ok HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49837 - "OPTIONS /api/parent/approve/TOKEN_1770976809_9ufv3e8ok HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49837 - "POST /api/parent/approve/TOKEN_1770976809_9ufv3e8ok HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49838 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49838 - "GET /api/student/requests HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49839 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49839 - "OPTIONS /api/teacher/requests/pending HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49839 - "GET /api/teacher/requests/pending HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49839 - "OPTIONS /api/teacher/approve/16 HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49839 - "POST /api/teacher/approve/16 HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49839 - "GET /api/teacher/requests/pending HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49840 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49840 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49840 - "OPTIONS /api/teacher/requests/pending HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49840 - "GET /api/teacher/requests/pending HTTP/1.1" 200 OK
+✅ Email sent to bhaktitakey@gmail.com: Login Verification Code
+INFO:     127.0.0.1:49876 - "POST /api/auth/send-otp HTTP/1.1" 200 OK
+✅ Email sent to kruthikab21@gmail.com: Login Verification Code
+INFO:     127.0.0.1:49879 - "POST /api/auth/send-otp HTTP/1.1" 200 OK
+✅ Email sent to krithi9koduri@gmail.com: Login Verification Code
+INFO:     127.0.0.1:49882 - "POST /api/auth/send-otp HTTP/1.1" 200 OK
+INFO:     192.168.18.104:49886 - "OPTIONS /api/auth/send-otp HTTP/1.1" 200 OK
+✅ Email sent to bhaktitakey@gmail.com: Login Verification Code
+INFO:     192.168.18.104:49886 - "POST /api/auth/send-otp HTTP/1.1" 200 OK
+INFO:     192.168.18.104:49888 - "OPTIONS /api/auth/verify-otp HTTP/1.1" 200 OK
+INFO:     192.168.18.104:49888 - "POST /api/auth/verify-otp HTTP/1.1" 401 Unauthorized
+INFO:     192.168.18.104:49889 - "POST /api/auth/verify-otp HTTP/1.1" 401 Unauthorized
+INFO:     192.168.18.104:49893 - "POST /api/auth/verify-otp HTTP/1.1" 401 Unauthorized

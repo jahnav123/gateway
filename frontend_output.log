@@ -1,0 +1,3 @@
+127.0.0.1 - - [14/Feb/2026 09:43:31] "GET /front_gate.html HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 09:43:46] "GET /front_gate.html HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 09:45:09] "GET /front_gate.html HTTP/1.1" 200 -

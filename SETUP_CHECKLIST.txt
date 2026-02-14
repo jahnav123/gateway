@@ -1,0 +1,41 @@
+================================================================================
+GOOGLE OAUTH SETUP CHECKLIST
+================================================================================
+
+□ Step 1: Go to https://console.cloud.google.com/
+□ Step 2: Create new project (name: Gateway Permission System)
+□ Step 3: Go to "APIs & Services" → "OAuth consent screen"
+   □ Select "External" → Create
+   □ Fill app name, your email
+   □ Add test users (your email addresses)
+   □ Save and Continue through all screens
+□ Step 4: Go to "APIs & Services" → "Credentials"
+   □ Create Credentials → OAuth client ID
+   □ Type: Web application
+   □ Add JavaScript origins:
+     - http://localhost:8080
+     - http://192.168.18.104:8080
+   □ Click Create
+   □ COPY the Client ID (looks like: 123456-abc.apps.googleusercontent.com)
+   □ COPY the Client Secret
+□ Step 5: Run setup script
+   □ Open terminal in gateway folder
+   □ Run: ./setup_oauth.sh
+   □ Paste Client ID when prompted
+   □ Paste Client Secret when prompted
+□ Step 6: Start server
+   □ Run: python server.py
+   □ Open: http://192.168.18.104:8080/front_gate.html
+   □ Test Google Sign-In button
+
+================================================================================
+PASTE YOUR CREDENTIALS HERE (for reference):
+================================================================================
+
+Client ID: 
+
+
+Client Secret: 
+
+
+================================================================================

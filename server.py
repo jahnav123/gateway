@@ -10,12 +10,32 @@ import os
 import time
 import random
 import string
+from google.oauth2 import id_token
+from google.auth.transport import requests
 from email_service import (
     send_parent_approval_email,
     send_approval_notification_email,
     send_rejection_notification_email,
     send_cancellation_notification_email
 )
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+ALLOWED_EMAIL_DOMAIN = 'bvrithyderabad.edu.in'
+
+# Role mapping - HODs and Teachers by email
+HOD_EMAILS = ['hod@bvrithyderabad.edu.in']  # Update with actual HOD email
+TEACHER_EMAILS = ['sundari.m@bvrithyderabad.edu.in']
+
+def get_user_role(email):
+    """Determine user role based on email"""
+    email_lower = email.lower().strip()
+    if email_lower in HOD_EMAILS:
+        return 'hod'
+    elif email_lower in TEACHER_EMAILS:
+        return 'teacher'
+    else:
+        return 'student'
 
 app = FastAPI()
 
@@ -50,6 +70,9 @@ class LoginRequest(BaseModel):
     identifier: str
     password: str
 
+class GoogleAuthRequest(BaseModel):
+    token: str
+
 class RequestSubmit(BaseModel):
     type: str
     reason: str
@@ -60,6 +83,61 @@ class RejectRequest(BaseModel):
     reason: Optional[str] = None
 
 # AUTH
+@app.post('/api/auth/google')
+def google_auth(req: GoogleAuthRequest):
+    """Authenticate user with Google OAuth token"""
+    try:
+        # Verify the Google token
+        idinfo = id_token.verify_oauth2_token(
+            req.token, 
+            requests.Request(), 
+            GOOGLE_CLIENT_ID
+        )
+        
+        # Extract user info
+        email = idinfo['email']
+        name = idinfo.get('name', email.split('@')[0])
+        
+        # Check if email is from allowed domain
+        email_domain = email.split('@')[1] if '@' in email else ''
+        if email_domain != ALLOWED_EMAIL_DOMAIN:
+            raise HTTPException(
+                status_code=403, 
+                detail=f'Access denied. Only @{ALLOWED_EMAIL_DOMAIN} emails are allowed.'
+            )
+        
+        # Determine role
+        role = get_user_role(email)
+        
+        # Generate user data
+        user_data = {
+            'id': hash(email) % 10000,
+            'email': email,
+            'role': role,
+            'name': name,
+            'class': '' if role != 'student' else 'CS-A',
+            'department': 'CSE',
+            'roll_number': ''
+        }
+        
+        # Generate JWT token
+        token = jwt.encode({
+            'id': user_data['id'],
+            'role': role,
+            'email': email,
+            'name': user_data['name'],
+            'class': user_data['class'],
+            'department': user_data['department'],
+            'exp': datetime.utcnow() + timedelta(hours=24)
+        }, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        
+        return {
+            'token': token,
+            'user': user_data
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail='Invalid Google token')
+
 @app.post('/api/auth/login')
 def login(req: LoginRequest):
     conn = get_db()
