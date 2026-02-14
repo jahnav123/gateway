@@ -1,0 +1,39 @@
+127.0.0.1 - - [14/Feb/2026 11:55:28] "POST /api/auth/google HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:55:28] code 500, message HTTP Error 401: Unauthorized
+127.0.0.1 - - [14/Feb/2026 11:55:28] "GET /api/student/requests HTTP/1.1" 500 -
+127.0.0.1 - - [14/Feb/2026 11:55:37] "POST /api/student/request HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:55:39] code 500, message HTTP Error 401: Unauthorized
+127.0.0.1 - - [14/Feb/2026 11:55:39] "GET /api/student/requests HTTP/1.1" 500 -
+127.0.0.1 - - [14/Feb/2026 11:55:48] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [14/Feb/2026 11:55:49] "GET /parent-approve.html?token=TOKEN_1771050333_nr4wop8rc HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:55:50] "GET /api/parent/request/TOKEN_1771050333_nr4wop8rc HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:55:51] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [14/Feb/2026 11:55:51] "POST /api/parent/approve/TOKEN_1771050333_nr4wop8rc HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:55:53] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [14/Feb/2026 11:55:54] "POST /api/auth/google HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:55:54] code 500, message HTTP Error 401: Unauthorized
+127.0.0.1 - - [14/Feb/2026 11:55:54] "GET /api/student/requests HTTP/1.1" 500 -
+127.0.0.1 - - [14/Feb/2026 11:55:59] "POST /api/auth/google HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:56:00] code 500, message HTTP Error 401: Unauthorized
+127.0.0.1 - - [14/Feb/2026 11:56:00] "GET /api/teacher/requests/pending HTTP/1.1" 500 -
+127.0.0.1 - - [14/Feb/2026 11:56:01] "POST /api/auth/google HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:56:01] code 500, message HTTP Error 401: Unauthorized
+127.0.0.1 - - [14/Feb/2026 11:56:01] "GET /api/hod/requests/pending HTTP/1.1" 500 -
+127.0.0.1 - - [14/Feb/2026 11:56:20] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [14/Feb/2026 11:56:25] "POST /api/student/request HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:56:25] "POST /api/student/request HTTP/1.1" 400 -
+127.0.0.1 - - [14/Feb/2026 11:56:25] "POST /api/student/request HTTP/1.1" 400 -
+127.0.0.1 - - [14/Feb/2026 11:56:26] "POST /api/auth/google HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:56:27] code 500, message HTTP Error 401: Unauthorized
+127.0.0.1 - - [14/Feb/2026 11:56:27] "GET /api/teacher/requests/pending HTTP/1.1" 500 -
+127.0.0.1 - - [14/Feb/2026 11:56:34] code 500, message HTTP Error 401: Unauthorized
+127.0.0.1 - - [14/Feb/2026 11:56:34] "GET /api/student/requests HTTP/1.1" 500 -
+127.0.0.1 - - [14/Feb/2026 11:57:08] "POST /api/auth/google HTTP/1.1" 200 -
+127.0.0.1 - - [14/Feb/2026 11:57:08] code 500, message HTTP Error 401: Unauthorized
+127.0.0.1 - - [14/Feb/2026 11:57:08] "GET /api/teacher/requests/pending HTTP/1.1" 500 -
+127.0.0.1 - - [14/Feb/2026 11:58:40] code 404, message File not found
+127.0.0.1 - - [14/Feb/2026 11:58:40] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 -
+127.0.0.1 - - [14/Feb/2026 11:58:40] code 404, message File not found
+127.0.0.1 - - [14/Feb/2026 11:58:40] "GET /apple-touch-icon.png HTTP/1.1" 404 -
+127.0.0.1 - - [14/Feb/2026 11:58:40] code 404, message File not found
+127.0.0.1 - - [14/Feb/2026 11:58:40] "GET /favicon.ico HTTP/1.1" 404 -

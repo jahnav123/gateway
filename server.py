@@ -138,10 +138,11 @@ def google_auth(req: GoogleAuthRequest):
             
             # Create new user for HOD/Teacher
             teacher_class = TEACHER_CLASSES.get(email, '') if role == 'teacher' else ''
+            # Use NULL for roll_number instead of empty string to avoid UNIQUE constraint issues
             c.execute('''
                 INSERT INTO users (role, email, name, department, class, roll_number, parent_phone, parent_email)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (role, email, name, 'CSE', teacher_class, '', '', ''))
+            ''', (role, email, name, 'CSE', teacher_class, None, '', ''))
             conn.commit()
             user_id = c.lastrowid
             user_name = name
