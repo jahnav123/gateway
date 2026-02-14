@@ -4,7 +4,18 @@
   warnings.warn(eol_message.format("3.9"), FutureWarning)
 /Users/jahnavibandarupalli/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
   warnings.warn(
-INFO:     Started server process [5588]
+INFO:     Started server process [5626]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+✅ Email service initialized
+INFO:     127.0.0.1:50344 - "OPTIONS /api/student/requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50344 - "GET /api/student/requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50344 - "OPTIONS /api/student/cancel/2 HTTP/1.1" 200 OK
+✅ Email sent to watermelon37453@gmail.com: Permission Request CANCELLED - NAGA JAHNAVI BANDARUPALLI
+INFO:     127.0.0.1:50344 - "POST /api/student/cancel/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50344 - "POST /api/student/cancel/2 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:50344 - "GET /api/student/requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50347 - "OPTIONS /api/student/request HTTP/1.1" 200 OK
+✅ Email sent to watermelon37453@gmail.com: Permission Request from NAGA JAHNAVI BANDARUPALLI
+INFO:     127.0.0.1:50347 - "POST /api/student/request HTTP/1.1" 200 OK
