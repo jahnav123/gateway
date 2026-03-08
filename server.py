@@ -32,12 +32,11 @@ ENFORCE_DOMAIN_RESTRICTION = os.getenv('ENFORCE_DOMAIN_RESTRICTION', 'false').lo
 
 # Role mapping - HODs and Teachers by email
 HOD_EMAILS = ['25wh1a05l9@bvrithyderabad.edu.in']  # Temporary testing HOD
-TEACHER_EMAILS = ['sundari.m@bvrithyderabad.edu.in', '25wh1a05k1@bvrithyderabad.edu.in']
+TEACHER_EMAILS = ['sundari.m@bvrithyderabad.edu.in']
 
 # Teacher class assignments
 TEACHER_CLASSES = {
-    'sundari.m@bvrithyderabad.edu.in': 'CS-B',
-    '25wh1a05k1@bvrithyderabad.edu.in': 'CS-A'
+    'sundari.m@bvrithyderabad.edu.in': 'CS-B'
 }
 
 def is_valid_email(email):
@@ -76,7 +75,7 @@ async def serve_parent_approve():
 
 @app.get("/")
 async def root():
-    return {"message": "Gateway API is running"}
+    return FileResponse("front_gate.html")
 
 JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = 'HS256'

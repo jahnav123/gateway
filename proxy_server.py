@@ -75,7 +75,14 @@ class ProxyHandler(SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 8080))
-    os.chdir('/Users/jahnavibandarupalli/gateway' if os.path.exists('/Users/jahnavibandarupalli/gateway') else '.')
+    # Use current directory in production (Railway/Render), local path only if it exists
+    base_dir = '/Users/jahnavibandarupalli/gateway'
+    if os.path.exists(base_dir):
+        os.chdir(base_dir)
+    else:
+        # We are likely in production
+        print(f"Running in production mode, serving from: {os.getcwd()}")
+        
     server = HTTPServer(('0.0.0.0', port), ProxyHandler)
     print(f'✅ Proxy server running on http://0.0.0.0:{port}')
     server.serve_forever()
