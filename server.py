@@ -383,11 +383,17 @@ def get_student_requests(user = Depends(verify_token)):
   conn = get_db()
   c = conn.cursor()
   c.execute('SELECT * FROM requests WHERE student_id = %s ORDER BY submitted_at DESC', (user['id'],))
-  requests = [dict(row) for row in c.fetchall()]
+  requests = []
+  for row in c.fetchall():
+      r = dict(row)
+      # Convert datetime objects to strings for JSON serialization
+      for key, value in r.items():
+          if hasattr(value, 'isoformat'):
+              r[key] = value.isoformat()
+      requests.append(r)
   conn.close()
-  
-  return requests
 
+  return requests
 @app.post('/api/student/cancel/{id}')
 def cancel_request(id: int, user = Depends(verify_token)):
   if user['role'] != 'student':
