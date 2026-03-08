@@ -54,29 +54,83 @@ def get_user_role(email):
   else:
     return 'student'
 
+def migrate_db():
+    """Ensure database schema is up to date"""
+    conn = get_db()
+    c = conn.cursor()
+
+    # Check if we're on Postgres
+    is_postgres = os.getenv('DATABASE_URL', '').startswith('postgres')
+
+    # List of columns that might be missing in older versions
+    required_columns = [
+        ('parent_status', 'TEXT'),
+        ('teacher_status', 'TEXT'),
+        ('hod_status', 'TEXT'),
+        ('parent_rejection_reason', 'TEXT'),
+        ('teacher_rejection_reason', 'TEXT'),
+        ('hod_rejection_reason', 'TEXT'),
+        ('parent_approved_at', 'TIMESTAMP'),
+        ('teacher_approved_at', 'TIMESTAMP'),
+        ('hod_approved_at', 'TIMESTAMP')
+    ]
+
+    for col_name, col_type in required_columns:
+        try:
+            # Check if column exists
+            has_column = False
+            if is_postgres:
+                c.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name='requests' AND column_name='{col_name}'")
+                if c.fetchone():
+                    has_column = True
+            else:
+                c.execute(f"PRAGMA table_info(requests)")
+                cols = [row[1] for row in c.fetchall()]
+                if col_name in cols:
+                    has_column = True
+            
+            if not has_column:
+                print(f"Adding missing column: {col_name}")
+                # For SQLite, we can only add one column at a time
+                # For Postgres, same here for simplicity
+                c.execute(f"ALTER TABLE requests ADD COLUMN {col_name} {col_type}")
+                conn.commit() # Commit after each column to be safe
+        except Exception as e:
+            print(f"Migration error for {col_name}: {e}")
+            conn.rollback()
+
+    conn.commit()
+    conn.close()
+
+# Run migration on startup
+try:
+    migrate_db()
+except Exception as e:
+    print(f"Startup migration failed: {e}")
+
 app = FastAPI()
 
 app.add_middleware(
-  CORSMiddleware,
-  allow_origins=["*"],
-  allow_credentials=True,
-  allow_methods=["*"],
-  allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Serve static HTML files
 @app.get("/front_gate.html")
 async def serve_front_gate():
-  return FileResponse("front_gate.html")
+    return FileResponse("front_gate.html")
 
 @app.get("/parent-approve.html")
 async def serve_parent_approve():
-  return FileResponse("parent-approve.html")
+    return FileResponse("parent-approve.html")
 
 @app.get("/")
 async def root():
-  return FileResponse("front_gate.html")
-
+    # Return version info to verify deployment
+    return {"status": "ok", "version": "1.0.5-migrated", "ui": "/front_gate.html"}
 JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = 'HS256'
 
