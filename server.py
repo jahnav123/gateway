@@ -229,8 +229,10 @@ def google_auth(req: GoogleAuthRequest):
         print(f'❌ OAuth ValueError: {error_msg}')
         raise HTTPException(status_code=401, detail=f'Invalid token: {error_msg}')
     except Exception as e:
-        print(f'❌ OAuth Exception: {type(e).__name__}: {str(e)}')
-        raise HTTPException(status_code=500, detail='Authentication failed. Please try again.')
+        error_msg = f"{type(e).__name__}: {str(e)}"
+        print(f'❌ OAuth Exception: {error_msg}')
+        # Include the error in the detail for debugging
+        raise HTTPException(status_code=500, detail=f'Auth Error: {error_msg}')
 
 @app.post('/api/auth/login')
 def login(req: LoginRequest):
