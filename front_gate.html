@@ -160,6 +160,13 @@
             if (body) options.body = JSON.stringify(body);
             
             const response = await fetch(`${API_URL}${endpoint}`, options);
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server returned an error. Please try again.');
+            }
+            
             const data = await response.json();
             
             if (!response.ok) {
