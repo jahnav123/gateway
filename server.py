@@ -143,97 +143,73 @@ def import_students():
   
   return {'message': f'Imported {imported} users'}
 
+def serialize_row(row):
+    """Helper to convert database row to dict with ISO strings for datetimes"""
+    if not row:
+        return None
+    r = dict(row)
+    for key, value in r.items():
+        if hasattr(value, 'isoformat'):
+            r[key] = value.isoformat()
+    return r
+
 # AUTH
 @app.post('/api/auth/google')
 def google_auth(req: GoogleAuthRequest):
-  """Authenticate user with Google OAuth token"""
-  try:
-    # Verify the Google token
-    idinfo = id_token.verify_oauth2_token(
-      req.token, 
-      requests.Request(), 
-      GOOGLE_CLIENT_ID
-    )
-    
-    # Extract user info
-    email = idinfo.get('email', '')
-    name = idinfo.get('name', email.split('@')[0] if email else 'User')
-    
-    # Validate email exists
-    if not email:
-      raise HTTPException(status_code=400, detail='Email not found in token')
-    
-    # Domain restriction (configurable)
-    if ENFORCE_DOMAIN_RESTRICTION:
-      email_domain = email.split('@')[1] if '@' in email else ''
-      if email_domain != ALLOWED_EMAIL_DOMAIN:
-        raise HTTPException(
-          status_code=403, 
-          detail=f'Access denied. Only @{ALLOWED_EMAIL_DOMAIN} emails are allowed.'
+    """Authenticate user with Google OAuth token"""
+    try:
+        # Verify the Google token
+        idinfo = id_token.verify_oauth2_token(
+            req.token,
+            requests.Request(),
+            GOOGLE_CLIENT_ID
         )
-    
-    # Determine role
-    role = get_user_role(email)
-    
-    # Check if user exists in database
-    conn = get_db()
-    c = conn.cursor()
-    c.execute('SELECT * FROM users WHERE email = %s ', (email,))
-    existing_user = c.fetchone()
-    
-    if existing_user:
-      user_id = existing_user['id']
-      user_name = existing_user['name']
-      user_class = existing_user['class']
-      user_dept = existing_user['department']
-      user_roll = existing_user['roll_number']
-    else:
-      conn.close()
-      raise HTTPException(
-        status_code=403, 
-        detail='User not registered. Please contact admin.'
-      )
-    
-    conn.close()
-    
-    # Generate user data
-    user_data = {
-      'id': user_id,
-      'email': email,
-      'role': role,
-      'name': user_name,
-      'class': user_class,
-      'department': user_dept,
-      'roll_number': user_roll
-    }
-    
-    # Generate JWT token
-    token = jwt.encode({
-      'id': user_data['id'],
-      'role': role,
-      'email': email,
-      'name': user_data['name'],
-      'class': user_data['class'],
-      'department': user_data['department'],
-      'exp': datetime.utcnow() + timedelta(hours=24)
-    }, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    
-    return {
-      'token': token,
-      'user': user_data
-    }
-  except HTTPException:
-    raise
-  except ValueError as e:
-    error_msg = str(e)
-    print(f'❌ OAuth ValueError: {error_msg}')
-    raise HTTPException(status_code=401, detail=f'Invalid token: {error_msg}')
-  except Exception as e:
-    error_msg = f"{type(e).__name__}: {str(e)}"
-    print(f'❌ OAuth Exception: {error_msg}')
-    # Include the error in the detail for debugging
-    raise HTTPException(status_code=500, detail=f'Auth Error: {error_msg}')
 
+        # Extract user info
+        email = idinfo.get('email', '')
+
+        # Determine role
+        role = get_user_role(email)
+
+        # Check if user exists in database
+        conn = get_db()
+        c = conn.cursor()
+        c.execute('SELECT * FROM users WHERE email = %s ', (email,))
+        existing_user = c.fetchone()
+
+        if not existing_user:
+            conn.close()
+            raise HTTPException(
+                status_code=403, 
+                detail='User not registered. Please contact admin.'
+            )
+
+        # Serialize the user data safely
+        user_data = serialize_row(existing_user)
+        user_data['role'] = role
+        conn.close()
+
+        # Generate JWT token
+        token = jwt.encode({
+            'id': user_data['id'],
+            'role': role,
+            'email': email,
+            'name': user_data['name'],
+            'class': user_data['class'],
+            'department': user_data['department'],
+            'exp': datetime.utcnow() + timedelta(hours=24)
+        }, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+        return {
+            'token': token,
+            'user': user_data
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        error_msg = f"{type(e).__name__}: {str(e)}"
+        print(f'❌ OAuth Exception: {error_msg}')
+        raise HTTPException(status_code=500, detail=f'Auth Error: {error_msg}')
 @app.post('/api/auth/login')
 def login(req: LoginRequest):
   conn = get_db()
@@ -383,18 +359,9 @@ def get_student_requests(user = Depends(verify_token)):
   conn = get_db()
   c = conn.cursor()
   c.execute('SELECT * FROM requests WHERE student_id = %s ORDER BY submitted_at DESC', (user['id'],))
-  requests = []
-  for row in c.fetchall():
-      r = dict(row)
-      # Convert datetime objects to strings for JSON serialization
-      for key, value in r.items():
-          if hasattr(value, 'isoformat'):
-              r[key] = value.isoformat()
-      requests.append(r)
+  requests = [serialize_row(row) for row in c.fetchall()]
   conn.close()
-
-  return requests
-@app.post('/api/student/cancel/{id}')
+  return requests@app.post('/api/student/cancel/{id}')
 def cancel_request(id: int, user = Depends(verify_token)):
   if user['role'] != 'student':
     raise HTTPException(status_code=403, detail='Access denied')
@@ -443,11 +410,9 @@ def get_parent_request(token: str):
   if request['token_used']:
     raise HTTPException(status_code=400, detail='This approval link has already been used')
   
-  r = dict(request)
-  for key, value in r.items():
-      if hasattr(value, 'isoformat'):
-          r[key] = value.isoformat()
-  return r
+  res = serialize_row(request)
+  conn.close()
+  return res
 @app.post('/api/parent/approve/{token}')
 def approve_parent(token: str):
   conn = get_db()
@@ -561,24 +526,16 @@ def get_teacher_requests(user = Depends(verify_token)):
   c = conn.cursor()
   # Show pending casual requests + approved emergency requests for visibility
   c.execute('''
-    SELECT * FROM requests 
-    WHERE student_class = %s AND (
-      status = 'PENDING_TEACHER' OR 
-      (status = 'APPROVED' AND request_type = 'Emergency')
-    )
-    ORDER BY submitted_at DESC
+      SELECT * FROM requests 
+      WHERE student_class = %s AND (
+          status = 'PENDING_TEACHER' OR 
+          (status = 'APPROVED' AND request_type = 'Emergency')
+      )
+      ORDER BY submitted_at DESC
   ''', (user['class'],))
-  requests = []
-  for row in c.fetchall():
-      r = dict(row)
-      for key, value in r.items():
-          if hasattr(value, 'isoformat'):
-              r[key] = value.isoformat()
-      requests.append(r)
+  requests = [serialize_row(row) for row in c.fetchall()]
   conn.close()
-
-  return requests
-@app.post('/api/teacher/approve/{id}')
+  return requests@app.post('/api/teacher/approve/{id}')
 def approve_teacher(id: int, user = Depends(verify_token)):
   if user['role'] != 'teacher':
     raise HTTPException(status_code=403, detail='Access denied')
@@ -651,24 +608,16 @@ def get_hod_requests(user = Depends(verify_token)):
   c = conn.cursor()
   # Show pending casual requests + approved emergency requests for visibility
   c.execute('''
-    SELECT * FROM requests 
-    WHERE student_department = %s AND (
-      status = 'PENDING_HOD' OR 
-      (status = 'APPROVED' AND request_type = 'Emergency')
-    )
-    ORDER BY submitted_at DESC
+      SELECT * FROM requests 
+      WHERE student_department = %s AND (
+          status = 'PENDING_HOD' OR 
+          (status = 'APPROVED' AND request_type = 'Emergency')
+      )
+      ORDER BY submitted_at DESC
   ''', (user['department'],))
-  requests = []
-  for row in c.fetchall():
-      r = dict(row)
-      for key, value in r.items():
-          if hasattr(value, 'isoformat'):
-              r[key] = value.isoformat()
-      requests.append(r)
+  requests = [serialize_row(row) for row in c.fetchall()]
   conn.close()
-
-  return requests
-@app.post('/api/hod/approve/{id}')
+  return requests@app.post('/api/hod/approve/{id}')
 def approve_hod(id: int, user = Depends(verify_token)):
   if user['role'] != 'hod':
     raise HTTPException(status_code=403, detail='Access denied')
