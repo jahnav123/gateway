@@ -443,8 +443,11 @@ def get_parent_request(token: str):
   if request['token_used']:
     raise HTTPException(status_code=400, detail='This approval link has already been used')
   
-  return dict(request)
-
+  r = dict(request)
+  for key, value in r.items():
+      if hasattr(value, 'isoformat'):
+          r[key] = value.isoformat()
+  return r
 @app.post('/api/parent/approve/{token}')
 def approve_parent(token: str):
   conn = get_db()
@@ -565,11 +568,16 @@ def get_teacher_requests(user = Depends(verify_token)):
     )
     ORDER BY submitted_at DESC
   ''', (user['class'],))
-  requests = [dict(row) for row in c.fetchall()]
+  requests = []
+  for row in c.fetchall():
+      r = dict(row)
+      for key, value in r.items():
+          if hasattr(value, 'isoformat'):
+              r[key] = value.isoformat()
+      requests.append(r)
   conn.close()
-  
-  return requests
 
+  return requests
 @app.post('/api/teacher/approve/{id}')
 def approve_teacher(id: int, user = Depends(verify_token)):
   if user['role'] != 'teacher':
@@ -650,11 +658,16 @@ def get_hod_requests(user = Depends(verify_token)):
     )
     ORDER BY submitted_at DESC
   ''', (user['department'],))
-  requests = [dict(row) for row in c.fetchall()]
+  requests = []
+  for row in c.fetchall():
+      r = dict(row)
+      for key, value in r.items():
+          if hasattr(value, 'isoformat'):
+              r[key] = value.isoformat()
+      requests.append(r)
   conn.close()
-  
-  return requests
 
+  return requests
 @app.post('/api/hod/approve/{id}')
 def approve_hod(id: int, user = Depends(verify_token)):
   if user['role'] != 'hod':
