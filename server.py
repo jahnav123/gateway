@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
 import bcrypt
@@ -62,6 +64,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static HTML files
+@app.get("/front_gate.html")
+async def serve_front_gate():
+    return FileResponse("front_gate.html")
+
+@app.get("/parent-approve.html")
+async def serve_parent_approve():
+    return FileResponse("parent-approve.html")
+
+@app.get("/")
+async def root():
+    return {"message": "Gateway API is running"}
 
 JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = 'HS256'
