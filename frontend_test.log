@@ -11,3 +11,8 @@
 127.0.0.1 - - [07/Mar/2026 18:08:40] "GET /parent-approve.html?token=TOKEN_1772887081_eqkhn2kya HTTP/1.1" 200 -
 127.0.0.1 - - [07/Mar/2026 18:12:52] "GET /front_gate.html HTTP/1.1" 200 -
 127.0.0.1 - - [07/Mar/2026 18:17:20] "GET /front_gate.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Mar/2026 20:10:13] "GET /front_gate.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Mar/2026 20:14:21] "GET /front_gate.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Mar/2026 21:39:00] "GET /front_gate.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Mar/2026 21:39:14] "GET /front_gate.html HTTP/1.1" 304 -
+127.0.0.1 - - [07/Mar/2026 21:45:34] "GET /parent-approve.html?token=TOKEN_1772900109_ysgyjn8tk HTTP/1.1" 200 -

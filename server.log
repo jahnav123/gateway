@@ -1,18 +1,16 @@
-INFO:     Started server process [3868]
+/Users/jahnavibandarupalli/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/jahnavibandarupalli/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/jahnavibandarupalli/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [1594]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1594]
 ✅ Email service initialized
-✅ Email sent to bhaktitakey@gmail.com: Login Verification Code
-INFO:     127.0.0.1:49876 - "POST /api/auth/send-otp HTTP/1.1" 200 OK
-✅ Email sent to kruthikab21@gmail.com: Login Verification Code
-INFO:     127.0.0.1:49879 - "POST /api/auth/send-otp HTTP/1.1" 200 OK
-✅ Email sent to krithi9koduri@gmail.com: Login Verification Code
-INFO:     127.0.0.1:49882 - "POST /api/auth/send-otp HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49886 - "OPTIONS /api/auth/send-otp HTTP/1.1" 200 OK
-✅ Email sent to bhaktitakey@gmail.com: Login Verification Code
-INFO:     192.168.18.104:49886 - "POST /api/auth/send-otp HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49888 - "OPTIONS /api/auth/verify-otp HTTP/1.1" 200 OK
-INFO:     192.168.18.104:49888 - "POST /api/auth/verify-otp HTTP/1.1" 401 Unauthorized
-INFO:     192.168.18.104:49889 - "POST /api/auth/verify-otp HTTP/1.1" 401 Unauthorized
-INFO:     192.168.18.104:49893 - "POST /api/auth/verify-otp HTTP/1.1" 401 Unauthorized
+⚠️  WARNING: Using default JWT_SECRET. Set JWT_SECRET in .env for production!
