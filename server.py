@@ -296,6 +296,11 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
         c.execute('SELECT * FROM users WHERE id = ?', (user['id'],))
         student = c.fetchone()
         
+        if not student:
+            conn.rollback()
+            conn.close()
+            raise HTTPException(status_code=400, detail=f'Student record not found for user ID {user["id"]}. Please logout and login again.')
+        
         if not student['parent_email']:
             conn.rollback()
             conn.close()
