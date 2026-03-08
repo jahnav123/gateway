@@ -14,20 +14,15 @@ def get_db():
         import psycopg2
         from psycopg2.extras import RealDictCursor
         
-        # Render uses postgres:// but psycopg2 needs postgresql://
+        # Render/Railway uses postgres:// but psycopg2 needs postgresql://
         db_url = DATABASE_URL.replace('postgres://', 'postgresql://')
         conn = psycopg2.connect(db_url, cursor_factory=RealDictCursor)
-        conn.row_factory = dict_factory_postgres
         return conn
     else:
         # SQLite connection (fallback for local development)
         conn = sqlite3.connect('gateway.db', check_same_thread=False)
         conn.row_factory = sqlite3.Row
         return conn
-
-def dict_factory_postgres(cursor, row):
-    """Convert PostgreSQL row to dict"""
-    return dict(row)
 
 def execute_query(query, params=None, fetch=False):
     """Execute query with automatic connection handling"""
