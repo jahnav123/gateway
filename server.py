@@ -142,26 +142,11 @@ def google_auth(req: GoogleAuthRequest):
             user_dept = existing_user['department']
             user_roll = existing_user['roll_number']
         else:
-            # Only allow HOD and Teachers to auto-register
-            if role == 'student':
-                conn.close()
-                raise HTTPException(
-                    status_code=403, 
-                    detail='Student not registered. Please contact admin to add your details.'
-                )
-            
-            # Create new user for HOD/Teacher
-            teacher_class = TEACHER_CLASSES.get(email, '') if role == 'teacher' else ''
-            c.execute('''
-                INSERT INTO users (role, email, name, department, class, roll_number, parent_phone, parent_email)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (role, email, name, 'CSE', teacher_class, None, '', ''))
-            conn.commit()
-            user_id = c.lastrowid
-            user_name = name
-            user_class = teacher_class
-            user_dept = 'CSE'
-            user_roll = ''
+            conn.close()
+            raise HTTPException(
+                status_code=403, 
+                detail='User not registered. Please contact admin.'
+            )
         
         conn.close()
         
