@@ -83,10 +83,9 @@ def init_database():
         
         # Insert sample users
         users = [
+            ('student', '25wh1a05d1@bvrithyderabad.edu.in', 'NAGA JAHNAVI BANDARUPALLI', 'CS-A', 'CSE', '25WH1A05D1', 'watermelon37453@gmail.com', 'Parent One', '9876543210'),
             ('student', '25wh1a05k1@bvrithyderabad.edu.in', 'Jahnavi Bandarupalli', 'CS-A', 'CSE', '25WH1A05K1', 'parent1@gmail.com', 'Parent One', '9876543210'),
             ('student', 'student2@bvrithyderabad.edu.in', 'Student Two', 'CS-A', 'CSE', 'CS002', 'parent2@gmail.com', 'Parent Two', '9876543211'),
-            ('student', 'student3@bvrithyderabad.edu.in', 'Student Three', 'CS-B', 'CSE', 'CS003', 'parent3@gmail.com', 'Parent Three', '9876543212'),
-            ('student', 'student4@bvrithyderabad.edu.in', 'Student Four', 'EC-A', 'ECE', 'EC001', 'parent4@gmail.com', 'Parent Four', '9876543213'),
             ('teacher', 'sundari.m@bvrithyderabad.edu.in', 'Sundari M', 'CS-B', 'CSE', None, None, None, None),
             ('hod', '25wh1a05l9@bvrithyderabad.edu.in', 'HOD CSE', None, 'CSE', None, None, None, None),
         ]
