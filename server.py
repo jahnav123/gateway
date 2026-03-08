@@ -132,7 +132,7 @@ def import_students():
         try:
             c.execute('''
                 INSERT INTO users (role, email, name, department, class, roll_number, parent_phone, parent_email)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s)
             ''', student)
             imported += 1
         except:
@@ -153,7 +153,7 @@ def google_auth(req: GoogleAuthRequest):
             req.token, 
             requests.Request(), 
             GOOGLE_CLIENT_ID
-        )
+       )
         
         # Extract user info
         email = idinfo.get('email', '')
@@ -170,7 +170,7 @@ def google_auth(req: GoogleAuthRequest):
                 raise HTTPException(
                     status_code=403, 
                     detail=f'Access denied. Only @{ALLOWED_EMAIL_DOMAIN} emails are allowed.'
-                )
+               )
         
         # Determine role
         role = get_user_role(email)
@@ -178,7 +178,7 @@ def google_auth(req: GoogleAuthRequest):
         # Check if user exists in database
         conn = get_db()
         c = conn.cursor()
-        c.execute('SELECT * FROM users WHERE email = ?', (email,))
+        c.execute('SELECT * FROM users WHERE email = %s', (email,))
         existing_user = c.fetchone()
         
         if existing_user:
@@ -192,7 +192,7 @@ def google_auth(req: GoogleAuthRequest):
             raise HTTPException(
                 status_code=403, 
                 detail='User not registered. Please contact admin.'
-            )
+           )
         
         conn.close()
         
@@ -243,12 +243,12 @@ def login(req: LoginRequest):
     identifier = req.identifier.strip()
     
     # First try as roll number (student)
-    c.execute('SELECT * FROM users WHERE roll_number = ?', (identifier.upper(),))
+    c.execute('SELECT * FROM users WHERE roll_number =  %s ', (identifier.upper(),))
     user = c.fetchone()
     
     # If not found, try as email (teacher/hod)
     if not user:
-        c.execute('SELECT * FROM users WHERE email = ?', (identifier.lower(),))
+        c.execute('SELECT * FROM users WHERE email =  %s ', (identifier.lower(),))
         user = c.fetchone()
     
     conn.close()
@@ -300,7 +300,7 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
     try:
         c.execute('''
             SELECT * FROM requests 
-            WHERE student_id = ? AND leave_date = ? AND status IN ('PENDING_PARENT', 'PENDING_TEACHER', 'PENDING_HOD')
+            WHERE student_id =  %s  AND leave_date =  %s  AND status IN ('PENDING_PARENT', 'PENDING_TEACHER', 'PENDING_HOD')
         ''', (user['id'], req.date))
         
         if c.fetchone():
@@ -309,7 +309,7 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
             raise HTTPException(status_code=400, detail='You already have a pending request for this date')
         
         # Get student
-        c.execute('SELECT * FROM users WHERE id = ?', (user['id'],))
+        c.execute('SELECT * FROM users WHERE id =  %s ', (user['id'],))
         student = c.fetchone()
         
         if not student:
@@ -338,12 +338,12 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
                 request_id, student_id, student_name, student_roll, student_class, student_department,
                 parent_phone, request_type, reason, leave_date, leave_time, expires_at,
                 status, parent_token, token_expiry
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ) VALUES (%s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s ,  %s)
         ''', (
             request_id, user['id'], student['name'], student['roll_number'], student['class'], student['department'],
             student['parent_email'], req.type, req.reason, req.date, req.time, f"{req.date} {req.time}",
             'PENDING_PARENT', token, token_expiry
-        ))
+       ))
         
         conn.commit()
         last_id = c.lastrowid
@@ -366,7 +366,7 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
         req.time,
         req.reason,
         token
-    )
+   )
     
     return {
         'message': 'Request submitted successfully',
@@ -382,7 +382,7 @@ def get_student_requests(user = Depends(verify_token)):
     
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE student_id = ? ORDER BY submitted_at DESC', (user['id'],))
+    c.execute('SELECT * FROM requests WHERE student_id =  %s  ORDER BY submitted_at DESC', (user['id'],))
     requests = [dict(row) for row in c.fetchall()]
     conn.close()
     
@@ -395,7 +395,7 @@ def cancel_request(id: int, user = Depends(verify_token)):
     
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE id = ? AND student_id = ?', (id, user['id']))
+    c.execute('SELECT * FROM requests WHERE id =  %s  AND student_id =  %s ', (id, user['id']))
     request = c.fetchone()
     
     if not request:
@@ -406,7 +406,7 @@ def cancel_request(id: int, user = Depends(verify_token)):
         conn.close()
         raise HTTPException(status_code=400, detail='Cannot cancel this request')
     
-    c.execute('UPDATE requests SET status = ?, cancelled_at = CURRENT_TIMESTAMP WHERE id = ?', ('CANCELLED_BY_STUDENT', id))
+    c.execute('UPDATE requests SET status =  %s , cancelled_at = CURRENT_TIMESTAMP WHERE id =  %s ', ('CANCELLED_BY_STUDENT', id))
     conn.commit()
     
     # No email sent to parent on cancellation
@@ -420,7 +420,7 @@ def cancel_request(id: int, user = Depends(verify_token)):
 def get_parent_request(token: str):
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE parent_token = ?', (token,))
+    c.execute('SELECT * FROM requests WHERE parent_token =  %s ', (token,))
     request = c.fetchone()
     conn.close()
     
@@ -443,7 +443,7 @@ def get_parent_request(token: str):
 def approve_parent(token: str):
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE parent_token = ?', (token,))
+    c.execute('SELECT * FROM requests WHERE parent_token =  %s ', (token,))
     request = c.fetchone()
     
     if not request:
@@ -471,12 +471,12 @@ def approve_parent(token: str):
                 parent_approved_at = CURRENT_TIMESTAMP,
                 teacher_status = 'auto_approved', teacher_approved_at = CURRENT_TIMESTAMP,
                 hod_status = 'auto_approved', hod_approved_at = CURRENT_TIMESTAMP
-            WHERE parent_token = ?
+            WHERE parent_token =  %s 
         ''', (token,))
         conn.commit()
         
         # Send approval notification
-        c.execute('SELECT u.email, u.parent_email, r.student_name, r.leave_date, r.leave_time FROM requests r JOIN users u ON r.student_id = u.id WHERE r.parent_token = ?', (token,))
+        c.execute('SELECT u.email, u.parent_email, r.student_name, r.leave_date, r.leave_time FROM requests r JOIN users u ON r.student_id = u.id WHERE r.parent_token =  %s ', (token,))
         data = c.fetchone()
         conn.close()
         
@@ -491,7 +491,7 @@ def approve_parent(token: str):
         c.execute('''
             UPDATE requests 
             SET status = 'PENDING_TEACHER', parent_status = 'approved', token_used = 1, parent_approved_at = CURRENT_TIMESTAMP
-            WHERE parent_token = ?
+            WHERE parent_token =  %s 
         ''', (token,))
         conn.commit()
         conn.close()
@@ -502,7 +502,7 @@ def approve_parent(token: str):
 def reject_parent(token: str, req: RejectRequest):
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE parent_token = ?', (token,))
+    c.execute('SELECT * FROM requests WHERE parent_token =  %s ', (token,))
     request = c.fetchone()
     
     if not request:
@@ -525,13 +525,13 @@ def reject_parent(token: str, req: RejectRequest):
     c.execute('''
         UPDATE requests 
         SET status = 'REJECTED_BY_PARENT', parent_status = 'rejected', token_used = 1, 
-            parent_approved_at = CURRENT_TIMESTAMP, parent_rejection_reason = ?
-        WHERE parent_token = ?
+            parent_approved_at = CURRENT_TIMESTAMP, parent_rejection_reason =  %s 
+        WHERE parent_token =  %s 
     ''', (req.reason, token))
     conn.commit()
     
     # Get student email to send notification
-    c.execute('SELECT u.email, r.student_name FROM requests r JOIN users u ON r.student_id = u.id WHERE r.parent_token = ?', (token,))
+    c.execute('SELECT u.email, r.student_name FROM requests r JOIN users u ON r.student_id = u.id WHERE r.parent_token =  %s ', (token,))
     student_data = c.fetchone()
     
     conn.close()
@@ -553,10 +553,10 @@ def get_teacher_requests(user = Depends(verify_token)):
     # Show pending casual requests + approved emergency requests for visibility
     c.execute('''
         SELECT * FROM requests 
-        WHERE student_class = ? AND (
+        WHERE student_class =  %s  AND (
             status = 'PENDING_TEACHER' OR 
             (status = 'APPROVED' AND request_type = 'Emergency')
-        )
+       )
         ORDER BY submitted_at DESC
     ''', (user['class'],))
     requests = [dict(row) for row in c.fetchall()]
@@ -571,7 +571,7 @@ def approve_teacher(id: int, user = Depends(verify_token)):
     
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE id = ?', (id,))
+    c.execute('SELECT * FROM requests WHERE id =  %s ', (id,))
     request = c.fetchone()
     
     if not request or request['status'] != 'PENDING_TEACHER':
@@ -581,7 +581,7 @@ def approve_teacher(id: int, user = Depends(verify_token)):
     c.execute('''
         UPDATE requests 
         SET status = 'PENDING_HOD', teacher_status = 'approved', teacher_approved_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        WHERE id =  %s 
     ''', (id,))
     conn.commit()
     conn.close()
@@ -598,7 +598,7 @@ def reject_teacher(id: int, req: RejectRequest, user = Depends(verify_token)):
     
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE id = ?', (id,))
+    c.execute('SELECT * FROM requests WHERE id =  %s ', (id,))
     request = c.fetchone()
     
     if not request or request['status'] != 'PENDING_TEACHER':
@@ -608,13 +608,13 @@ def reject_teacher(id: int, req: RejectRequest, user = Depends(verify_token)):
     c.execute('''
         UPDATE requests 
         SET status = 'REJECTED_BY_TEACHER', teacher_status = 'rejected', 
-            teacher_approved_at = CURRENT_TIMESTAMP, teacher_rejection_reason = ?
-        WHERE id = ?
+            teacher_approved_at = CURRENT_TIMESTAMP, teacher_rejection_reason =  %s 
+        WHERE id =  %s 
     ''', (req.reason, id))
     conn.commit()
     
     # Get student and parent emails
-    c.execute('SELECT u.email, u.parent_email, r.student_name FROM requests r JOIN users u ON r.student_id = u.id WHERE r.id = ?', (id,))
+    c.execute('SELECT u.email, u.parent_email, r.student_name FROM requests r JOIN users u ON r.student_id = u.id WHERE r.id =  %s ', (id,))
     data = c.fetchone()
     conn.close()
     
@@ -638,10 +638,10 @@ def get_hod_requests(user = Depends(verify_token)):
     # Show pending casual requests + approved emergency requests for visibility
     c.execute('''
         SELECT * FROM requests 
-        WHERE student_department = ? AND (
+        WHERE student_department =  %s  AND (
             status = 'PENDING_HOD' OR 
             (status = 'APPROVED' AND request_type = 'Emergency')
-        )
+       )
         ORDER BY submitted_at DESC
     ''', (user['department'],))
     requests = [dict(row) for row in c.fetchall()]
@@ -656,7 +656,7 @@ def approve_hod(id: int, user = Depends(verify_token)):
     
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE id = ?', (id,))
+    c.execute('SELECT * FROM requests WHERE id =  %s ', (id,))
     request = c.fetchone()
     
     if not request or request['status'] != 'PENDING_HOD':
@@ -666,12 +666,12 @@ def approve_hod(id: int, user = Depends(verify_token)):
     c.execute('''
         UPDATE requests 
         SET status = 'APPROVED', hod_status = 'approved', hod_approved_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        WHERE id =  %s 
     ''', (id,))
     conn.commit()
     
     # Get student and parent emails
-    c.execute('SELECT u.email, u.parent_email, r.student_name, r.leave_date, r.leave_time FROM requests r JOIN users u ON r.student_id = u.id WHERE r.id = ?', (id,))
+    c.execute('SELECT u.email, u.parent_email, r.student_name, r.leave_date, r.leave_time FROM requests r JOIN users u ON r.student_id = u.id WHERE r.id =  %s ', (id,))
     data = c.fetchone()
     
     conn.close()
@@ -695,7 +695,7 @@ def reject_hod(id: int, req: RejectRequest, user = Depends(verify_token)):
     
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT * FROM requests WHERE id = ?', (id,))
+    c.execute('SELECT * FROM requests WHERE id =  %s ', (id,))
     request = c.fetchone()
     
     if not request or request['status'] != 'PENDING_HOD':
@@ -705,13 +705,13 @@ def reject_hod(id: int, req: RejectRequest, user = Depends(verify_token)):
     c.execute('''
         UPDATE requests 
         SET status = 'REJECTED_BY_HOD', hod_status = 'rejected', 
-            hod_approved_at = CURRENT_TIMESTAMP, hod_rejection_reason = ?
-        WHERE id = ?
+            hod_approved_at = CURRENT_TIMESTAMP, hod_rejection_reason =  %s 
+        WHERE id =  %s 
     ''', (req.reason, id))
     conn.commit()
     
     # Get student and parent emails
-    c.execute('SELECT u.email, u.parent_email, r.student_name FROM requests r JOIN users u ON r.student_id = u.id WHERE r.id = ?', (id,))
+    c.execute('SELECT u.email, u.parent_email, r.student_name FROM requests r JOIN users u ON r.student_id = u.id WHERE r.id =  %s ', (id,))
     data = c.fetchone()
     conn.close()
     
