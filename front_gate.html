@@ -144,10 +144,7 @@
 
     <script>
         // Auto-detect API URL based on environment
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000/api'
-            : window.location.origin + '/api';
-        let currentUser = null, currentRole = null, currentToken = null, currentStudentTab = 'pending';
+        const API_URL = window.location.origin + '/api';        let currentUser = null, currentRole = null, currentToken = null, currentStudentTab = 'pending';
         
         // API Helper
         async function apiCall(endpoint, method = 'GET', body = null, useToken = true) {
