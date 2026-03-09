@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -348,7 +348,7 @@ def login(req: LoginRequest):
 
 # STUDENT
 @app.post('/api/student/request')
-def submit_request(req: RequestSubmit, user = Depends(verify_token)):
+def submit_request(req: RequestSubmit, background_tasks: BackgroundTasks, user = Depends(verify_token)):
   if user['role'] != 'student':
     raise HTTPException(status_code=403, detail='Access denied')
   
@@ -425,8 +425,9 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
     
     print(f"DEBUG: Request submitted successfully (ID: {last_id}). Sending email.")
     
-    # Send email to parent in background
-    threading.Thread(target=send_parent_approval_email, args=(
+    # Send email to parent in background using BackgroundTasks
+    background_tasks.add_task(
+      send_parent_approval_email,
       student['parent_email'],
       student['name'],
       req.type,
@@ -434,7 +435,7 @@ def submit_request(req: RequestSubmit, user = Depends(verify_token)):
       req.time,
       req.reason,
       token
-    )).start()
+    )
     
     return {
       'message': 'Request submitted successfully',
@@ -528,19 +529,17 @@ def get_parent_request(token: str):
   conn.close()
   return res
 @app.post('/api/parent/approve/{token}')
-def approve_parent(token: str):
+def approve_parent(token: str, background_tasks: BackgroundTasks):
   conn = get_db()
   c = conn.cursor()
   p = get_placeholder()
-  
-  
   c.execute(f'SELECT * FROM requests WHERE parent_token = {p} ', (token,))
   request = c.fetchone()
-  
+
   if not request:
     conn.close()
     raise HTTPException(status_code=404, detail='Invalid token')
-  
+
   try:
     token_expiry = datetime.fromisoformat(request['token_expiry'])
     if token_expiry < datetime.utcnow():
@@ -549,14 +548,14 @@ def approve_parent(token: str):
   except (ValueError, TypeError):
     conn.close()
     raise HTTPException(status_code=400, detail='Invalid token expiry format')
-  
+
   if request['token_used']:
     if request['parent_status'] in ['approved', 'rejected']:
       conn.close()
       return {'message': f"Request already {request['parent_status']}"}
     conn.close()
     raise HTTPException(status_code=400, detail='Token already used')
-  
+
   # Emergency requests auto-approve, casual requests go to teacher
   if request['request_type'].lower() == 'emergency':
     c.execute(f'''
@@ -568,18 +567,18 @@ def approve_parent(token: str):
       WHERE parent_token = {p} 
     ''', (token,))
     conn.commit()
-    
+
     # Send approval notification
     c.execute(f'SELECT u.email, u.parent_email, r.student_name, r.leave_date, r.leave_time FROM requests r JOIN users u ON r.student_id = u.id WHERE r.parent_token = {p} ', (token,))
     data = c.fetchone()
     conn.close()
-    
+
     if data:
       if data['email']:
-        send_approval_notification_email(data['email'], data['student_name'], data['leave_date'], data['leave_time'])
+        background_tasks.add_task(send_approval_notification_email, data['email'], data['student_name'], data['leave_date'], data['leave_time'])
       if data['parent_email']:
-        send_approval_notification_email(data['parent_email'], data['student_name'], data['leave_date'], data['leave_time'])
-    
+        background_tasks.add_task(send_approval_notification_email, data['parent_email'], data['student_name'], data['leave_date'], data['leave_time'])
+
     return {'message': 'Emergency request approved successfully (auto-approved)'}
   else:
     c.execute(f'''
@@ -589,15 +588,14 @@ def approve_parent(token: str):
     ''', (token,))
     conn.commit()
     conn.close()
-    
+
     return {'message': 'Request approved successfully'}
 
 @app.post('/api/parent/reject/{token}')
-def reject_parent(token: str, req: RejectRequest):
+def reject_parent(token: str, req: RejectRequest, background_tasks: BackgroundTasks):
   conn = get_db()
   c = conn.cursor()
   p = get_placeholder()
-  
   
   c.execute(f'SELECT * FROM requests WHERE parent_token = {p} ', (token,))
   request = c.fetchone()
@@ -636,14 +634,15 @@ def reject_parent(token: str, req: RejectRequest):
   
   conn.close()
   
-  # Send rejection notification to student in background
+  # Send rejection notification to student in background using BackgroundTasks
   if student_data and student_data['email']:
-    threading.Thread(target=send_rejection_notification_email, args=(
+    background_tasks.add_task(
+      send_rejection_notification_email,
       student_data['email'], 
       student_data['student_name'], 
       'Parent', 
       req.reason
-    )).start()
+    )
   
   return {'message': 'Request rejected successfully'}
 
