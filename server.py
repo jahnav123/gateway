@@ -40,11 +40,12 @@ ALLOWED_EMAIL_DOMAIN = 'bvrithyderabad.edu.in'
 ENFORCE_DOMAIN_RESTRICTION = os.getenv('ENFORCE_DOMAIN_RESTRICTION', 'false').lower() == 'true'
 
 # Role mapping - HODs and Teachers by email
-HOD_EMAILS = ['25wh1a05l9@bvrithyderabad.edu.in'] # Temporary testing HOD
-TEACHER_EMAILS = ['sundari.m@bvrithyderabad.edu.in']
+HOD_EMAILS = ['25wh1a05l9@bvrithyderabad.edu.in']
+TEACHER_EMAILS = ['25wh1a05k1@bvrithyderabad.edu.in', 'sundari.m@bvrithyderabad.edu.in']
 
 # Teacher class assignments
 TEACHER_CLASSES = {
+  '25wh1a05k1@bvrithyderabad.edu.in': 'CS-A',
   'sundari.m@bvrithyderabad.edu.in': 'CS-B'
 }
 
