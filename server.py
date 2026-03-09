@@ -410,25 +410,39 @@ def submit_request(req: RequestSubmit, background_tasks: BackgroundTasks, user =
     
     print("DEBUG: Inserting new request.")
     
-    c.execute(f'''
+    insert_query = f'''
       INSERT INTO requests (
         request_id, student_id, student_name, student_roll, student_class, student_department,
         parent_phone, request_type, reason, leave_date, leave_time, expires_at,
         status, parent_token, token_expiry
       ) VALUES ({p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}, {p})
-    ''', (
-      request_id, user['id'], student['name'], student['roll_number'], student['class'], student['department'],
-      student['parent_email'], req.type, req.reason, req.date, req.time, f"{req.date} {req.time}",
-      'PENDING_PARENT', token, token_expiry
-    ))
+    '''
+    
+    # PostgreSQL needs RETURNING id to get the new ID
+    if os.getenv('DATABASE_URL', '').startswith('postgres'):
+        insert_query += " RETURNING id"
+        c.execute(insert_query, (
+          request_id, user['id'], student['name'], student['roll_number'], student['class'], student['department'],
+          student['parent_email'], req.type, req.reason, req.date, req.time, f"{req.date} {req.time}",
+          'PENDING_PARENT', token, token_expiry
+        ))
+        last_id = c.fetchone()['id']
+    else:
+        # SQLite uses lastrowid
+        c.execute(insert_query, (
+          request_id, user['id'], student['name'], student['roll_number'], student['class'], student['department'],
+          student['parent_email'], req.type, req.reason, req.date, req.time, f"{req.date} {req.time}",
+          'PENDING_PARENT', token, token_expiry
+        ))
+        last_id = c.lastrowid
     
     conn.commit()
-    last_id = c.lastrowid
     conn.close()
     
     print(f"DEBUG: Request submitted successfully (ID: {last_id}). Sending email.")
     
     # Send email to parent in background using BackgroundTasks
+    print(f"DEBUG: Attempting to send email to parent: {student['parent_email']}")
     background_tasks.add_task(
       send_parent_approval_email,
       student['parent_email'],
