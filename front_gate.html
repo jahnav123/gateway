@@ -150,33 +150,40 @@
         async function apiCall(endpoint, method = 'GET', body = null, useToken = true) {
             const headers = { 'Content-Type': 'application/json' };
             if (useToken && currentToken) {
-                headers['Authorization'] = `Bearer ${currentToken}`;
-                console.log('Sending token:', currentToken.substring(0, 20) + '...');
-            } else if (useToken) {
-                console.error('No token available!');
+                headers['Authorization'] = `Bearer ${currentToken.trim()}`;
             }
             
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
             
             console.log(`API Call: ${method} ${endpoint}`);
-            const response = await fetch(`${API_URL}${endpoint}`, options);
-            
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                console.error('Non-JSON response:', response.status, response.statusText);
-                throw new Error('Server returned an error. Please try again.');
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                
+                let data;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    try {
+                        data = await response.json();
+                    } catch (e) {
+                        console.error('JSON Parse Error:', e);
+                        throw new Error('Invalid response from server.');
+                    }
+                } else {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error('Server returned an error. Please try again.');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(data.error || data.detail || 'Request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                throw error;
             }
-            
-            const data = await response.json();
-            
-            if (!response.ok) {
-                console.error('API Error:', data);
-                throw new Error(data.error || data.detail || 'Request failed');
-            }
-            
-            return data;
         }
 
         // Simple email login (fallback)

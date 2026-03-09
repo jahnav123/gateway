@@ -472,34 +472,39 @@ def get_student_requests(user = Depends(verify_token)):
 
 @app.post('/api/student/cancel/{id}')
 def cancel_request(id: int, user = Depends(verify_token)):
-  print(f"DEBUG: Cancelling request ID: {id} for user: {user['id']}")
-  if user['role'] != 'student':
-    raise HTTPException(status_code=403, detail='Access denied')
-  
-  conn = get_db()
-  c = conn.cursor()
-  p = get_placeholder()
-  
-  
-  c.execute(f'SELECT * FROM requests WHERE id = {p} AND student_id = {p} ', (id, user['id']))
-  request = c.fetchone()
-  
-  if not request:
+  try:
+    print(f"DEBUG: Cancelling request ID: {id} for user: {user['id']}")
+    if user['role'] != 'student':
+      raise HTTPException(status_code=403, detail='Access denied')
+    
+    conn = get_db()
+    c = conn.cursor()
+    p = get_placeholder()
+    
+    c.execute(f'SELECT * FROM requests WHERE id = {p} AND student_id = {p}', (id, user['id']))
+    request = c.fetchone()
+    
+    if not request:
+      conn.close()
+      raise HTTPException(status_code=404, detail='Request not found')
+    
+    # Handle both dictionary and tuple access for safety
+    status = request['status'] if isinstance(request, (dict, sqlite3.Row)) or hasattr(request, 'keys') else request[13]
+    
+    if status not in ['PENDING_PARENT', 'PENDING_TEACHER', 'PENDING_HOD']:
+      conn.close()
+      raise HTTPException(status_code=400, detail='Cannot cancel this request')
+    
+    c.execute(f'UPDATE requests SET status = {p}, cancelled_at = CURRENT_TIMESTAMP WHERE id = {p}', ('CANCELLED_BY_STUDENT', id))
+    conn.commit()
     conn.close()
-    raise HTTPException(status_code=404, detail='Request not found')
-  
-  if request['status'] not in ['PENDING_PARENT', 'PENDING_TEACHER', 'PENDING_HOD']:
-    conn.close()
-    raise HTTPException(status_code=400, detail='Cannot cancel this request')
-  
-  c.execute(f'UPDATE requests SET status = {p} , cancelled_at = CURRENT_TIMESTAMP WHERE id = {p} ', ('CANCELLED_BY_STUDENT', id))
-  conn.commit()
-  
-  # No email sent to parent on cancellation
-  
-  conn.close()
-  
-  return {'message': 'Request cancelled successfully'}
+    
+    return {'message': 'Request cancelled successfully'}
+  except HTTPException:
+    raise
+  except Exception as e:
+    print(f"CANCEL ERROR: {e}")
+    raise HTTPException(status_code=500, detail=str(e))
 
 # PARENT
 @app.get('/api/parent/request/{token}')
