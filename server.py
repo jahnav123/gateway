@@ -90,7 +90,8 @@ def migrate_db():
         ('hod_rejection_reason', 'TEXT'),
         ('parent_approved_at', 'TIMESTAMP'),
         ('teacher_approved_at', 'TIMESTAMP'),
-        ('hod_approved_at', 'TIMESTAMP')
+        ('hod_approved_at', 'TIMESTAMP'),
+        ('cancelled_at', 'TIMESTAMP')
     ]
 
     for col_name, col_type in required_columns:
