@@ -55,6 +55,59 @@ def is_valid_email(email):
   pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
   return re.match(pattern, email) is not None
 
+def parse_student_email(email):
+    """
+    Parses student email to extract year, branch, entry type, and roll number.
+    Pattern: {yy}wh{1a/5a}{branch_code}{roll_no}@bvrithyderabad.edu.in
+    """
+    email = email.lower().strip()
+    if not email.endswith('@bvrithyderabad.edu.in'):
+        return None
+    
+    prefix = email.split('@')[0]
+    if len(prefix) < 10:
+        return None
+        
+    try:
+        yy = int(prefix[0:2])
+        entry_type = prefix[4:6] # '1a' or '5a'
+        branch_code = prefix[6:8]
+        
+        # Branch mapping
+        branch_map = {
+            '05': 'CSE',
+            '04': 'ECE',
+            '02': 'EEE',
+            '66': 'CSE-AIML',
+            '12': 'IT'
+        }
+        branch = branch_map.get(branch_code, 'Unknown')
+        
+        # Year Calculation
+        current_date = datetime.now()
+        # Academic year starts in July. If before July, academic year is current_year - 1
+        current_ay = current_date.year if current_date.month >= 7 else current_date.year - 1
+        admission_year = 2000 + yy
+        
+        # 1a: Normal entry (starts 1st year), 5a: Lateral entry (starts 2nd year)
+        base_year = 1 if entry_type == '1a' else 2
+        year_of_study = (current_ay - admission_year) + base_year
+        
+        # Clamp year between 1 and 4
+        year_of_study = max(1, min(4, year_of_study))
+        
+        return {
+            'roll_number': prefix[0:10].upper(),
+            'admission_year': admission_year,
+            'year': year_of_study,
+            'branch': branch,
+            'branch_code': branch_code,
+            'entry_type': entry_type
+        }
+    except Exception as e:
+        print(f"Error parsing email {email}: {e}")
+        return None
+
 def get_user_role(email):
   """Determine user role based on email"""
   email_lower = email.lower().strip()
@@ -91,7 +144,12 @@ def migrate_db():
         ('parent_approved_at', 'TIMESTAMP'),
         ('teacher_approved_at', 'TIMESTAMP'),
         ('hod_approved_at', 'TIMESTAMP'),
-        ('cancelled_at', 'TIMESTAMP')
+        ('cancelled_at', 'TIMESTAMP'),
+        ('admission_year', 'INTEGER'),
+        ('year_of_study', 'INTEGER'),
+        ('branch', 'TEXT'),
+        ('branch_code', 'TEXT'),
+        ('section', 'TEXT')
     ]
 
     for col_name, col_type in required_columns:
@@ -261,9 +319,27 @@ def google_auth(req: GoogleAuthRequest):
                 status_code=403, 
                 detail='User not registered. Please contact admin.'
             )
-
-        # Serialize the user data safely
+            
+        # Update academic info for students
         user_data = serialize_row(existing_user)
+        if role == 'student':
+            academic = parse_student_email(email)
+            if academic:
+                c.execute(f'''
+                    UPDATE users 
+                    SET roll_number = {p}, admission_year = {p}, 
+                        year_of_study = {p}, branch = {p}, branch_code = {p}
+                    WHERE id = {p}
+                ''', (
+                    academic['roll_number'], academic['admission_year'],
+                    academic['year'], academic['branch'], academic['branch_code'],
+                    user_data['id']
+                ))
+                conn.commit()
+                # Refresh user data
+                c.execute(f'SELECT * FROM users WHERE id = {p}', (user_data['id'],))
+                user_data = serialize_row(c.fetchone())
+
         user_data['role'] = role
         conn.close()
 
