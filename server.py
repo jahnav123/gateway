@@ -64,9 +64,9 @@ def get_user_role(email):
     return 'student'
 
 def get_placeholder():
-    """Returns {p} for PostgreSQL and ? for SQLite"""
+    """Returns %s for PostgreSQL and ? for SQLite"""
     if os.getenv('DATABASE_URL', '').startswith('postgres'):
-        return '{p}'
+        return '%s'
     return '?'
 
 def migrate_db():
