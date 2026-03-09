@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
+import sqlite3
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
