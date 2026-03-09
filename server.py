@@ -403,7 +403,7 @@ def submit_request(req: RequestSubmit, background_tasks: BackgroundTasks, user =
     # Generate token
     token = 'TOKEN_' + str(int(time.time())) + '_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=9))
     token_expiry = (datetime.utcnow() + timedelta(hours=24)).isoformat()
-    request_id = 'REQ_' + str(int(time.time()))
+    request_id = 'REQ_' + str(int(time.time())) + '_' + ''.join(random.choices(string.digits, k=4))
     
     print("DEBUG: Inserting new request.")
     
@@ -472,6 +472,7 @@ def get_student_requests(user = Depends(verify_token)):
 
 @app.post('/api/student/cancel/{id}')
 def cancel_request(id: int, user = Depends(verify_token)):
+  print(f"DEBUG: Cancelling request ID: {id} for user: {user['id']}")
   if user['role'] != 'student':
     raise HTTPException(status_code=403, detail='Access denied')
   

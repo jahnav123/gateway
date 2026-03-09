@@ -59,13 +59,26 @@ def test_full_flow():
     request_id_db = resp.json()['id']
     log(f"Casual Request Submitted (ID: {request_id_db}). Parent Token: {parent_token}")
 
-    # 4. Attempt Duplicate Submission (Should be blocked)
     log("Attempting DUPLICATE submission (should be blocked)...")
     resp = session.post(f"{BASE_URL}/student/request", json=req_data, headers=headers)
     if resp.status_code == 400:
         log(f"SUCCESS: Blocked correctly. Message: {resp.json()['detail']}")
     else:
         log(f"FAILED: Duplicate was NOT blocked. Status: {resp.status_code}")
+
+    # 4.5 Test Cancellation
+    log("Attempting to CANCEL the request...")
+    resp = session.post(f"{BASE_URL}/student/cancel/{request_id_db}", headers=headers)
+    if resp.status_code == 200:
+        log("Cancellation Successful.")
+        # Re-submit to continue the rest of the flow
+        log("Re-submitting for flow testing...")
+        resp = session.post(f"{BASE_URL}/student/request", json=req_data, headers=headers)
+        parent_token = resp.json()['parentToken']
+        request_id_db = resp.json()['id']
+    else:
+        log(f"FAILED Cancellation: {resp.text}")
+        return
 
     # 5. Parent Approval
     log("Simulating Parent Approval...")
